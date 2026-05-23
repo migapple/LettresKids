@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Lettres Kids</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:#062030}
+#app{position:fixed;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;overflow:hidden;background:#062030}
+
+/* HEADER */
+#header{padding-top:calc(10px + env(safe-area-inset-top));padding-left:calc(12px + env(safe-area-inset-left));padding-right:calc(12px + env(safe-area-inset-right));padding-bottom:8px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;background:#09304a}
+h1{font-size:21px;font-weight:900;color:#fff;letter-spacing:-0.5px}
+.hdr-btns{display:flex;gap:6px}
+.lang-btn{background:rgba(255,255,255,0.15);border:none;border-radius:20px;padding:5px 12px;font-size:17px;cursor:pointer;color:#fff;font-weight:700}
+.lang-btn:active{transform:scale(0.95)}
+
+/* TABS */
+#tabs{display:flex;flex-shrink:0;background:#09304a;padding:0 12px 10px;gap:8px}
+.tab{flex:1;padding:8px 4px;border:none;border-radius:14px;font-size:11px;font-weight:800;cursor:pointer;color:#fff;opacity:0.45;transition:all 0.2s;letter-spacing:0.2px}
+.tab.active{opacity:1;transform:scale(1.04);box-shadow:0 3px 12px rgba(0,0,0,0.35)}
+.tab-alpha{background:#f472b6}
+.tab-trace{background:#fb923c}
+.tab-mots{background:#34d399}
+.tab-quiz{background:#60a5fa}
+
+/* MAIN */
+#main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px calc(14px + env(safe-area-inset-bottom))}
+
+/* ===== ALPHABET ===== */
+#screen-alpha{display:none}
+.alpha-nav{display:flex;overflow-x:auto;gap:5px;padding:6px 0 10px;scrollbar-width:none}
+.alpha-nav::-webkit-scrollbar{display:none}
+.alpha-pill{min-width:34px;height:34px;border:none;border-radius:50%;font-size:14px;font-weight:900;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0.4;transition:all 0.2s;flex-shrink:0}
+.alpha-pill.current{opacity:1;transform:scale(1.22);box-shadow:0 3px 14px rgba(0,0,0,0.4)}
+.letter-display{text-align:center;margin:6px 0}
+.big-letter{font-size:110px;font-weight:900;line-height:1;cursor:pointer;user-select:none;transition:transform 0.12s;text-shadow:0 4px 20px rgba(0,0,0,0.25)}
+.big-letter:active{transform:scale(0.93)}
+.letter-both{display:flex;justify-content:center;align-items:baseline;gap:16px;margin-top:-6px}
+.ltr-maj{font-size:80px;font-weight:900;line-height:1}
+.ltr-min{font-size:70px;font-weight:900;line-height:1;opacity:0.7}
+.letter-name-row{display:flex;justify-content:center;gap:10px;margin-top:4px;flex-wrap:wrap}
+.letter-name{font-size:15px;font-weight:800;padding:4px 14px;border-radius:20px;background:rgba(255,255,255,0.1);color:#fff}
+.alpha-nav-row{display:flex;justify-content:center;gap:14px;margin:10px 0}
+.nav-btn{width:46px;height:46px;border:none;border-radius:50%;font-size:22px;font-weight:900;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,0.3)}
+.nav-btn:active{transform:scale(0.92)}
+.words-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+.word-card{background:rgba(255,255,255,0.07);border-radius:18px;padding:10px 14px;text-align:center;min-width:80px;cursor:pointer}
+.word-card:active{transform:scale(0.95)}
+.word-emoji{font-size:34px}
+.word-text{font-size:13px;font-weight:800;color:#fff;margin-top:4px}
+.word-text-en{font-size:11px;color:rgba(255,255,255,0.5);margin-top:1px}
+
+/* ===== TRACE ===== */
+#screen-trace{display:none}
+.trace-header{text-align:center;margin-bottom:8px}
+.trace-big{font-size:36px;font-weight:900;color:#fff}
+.trace-sub{font-size:13px;color:rgba(255,255,255,0.55);margin-top:2px}
+.trace-tabs{display:flex;gap:8px;justify-content:center;margin-bottom:10px}
+.trace-tab{border:none;border-radius:12px;padding:6px 16px;font-size:13px;font-weight:800;color:#fff;cursor:pointer;opacity:0.45;transition:all 0.2s}
+.trace-tab.active{opacity:1;box-shadow:0 3px 8px rgba(0,0,0,0.25)}
+.canvas-wrap{display:flex;justify-content:center}
+#trace-canvas{border-radius:20px;touch-action:none;display:block;cursor:crosshair}
+.trace-actions{display:flex;gap:10px;justify-content:center;margin-top:10px}
+.t-btn{border:none;border-radius:14px;padding:9px 18px;font-size:14px;font-weight:800;color:#fff;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,0.25)}
+.t-btn:active{transform:scale(0.96)}
+.trace-feedback{text-align:center;font-size:18px;font-weight:800;min-height:28px;margin-top:8px;color:#fbbf24}
+.step-indicators{display:flex;gap:4px;justify-content:center;margin-bottom:8px;flex-wrap:wrap}
+.step-dot{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,0.2);transition:all 0.3s}
+.step-dot.done{background:#34d399}
+.step-dot.active{background:#fff;transform:scale(1.35)}
+
+/* ===== MOTS ===== */
+#screen-mots{display:none}
+.mots-letter-row{display:flex;overflow-x:auto;gap:5px;padding:4px 0 10px;scrollbar-width:none}
+.mots-letter-row::-webkit-scrollbar{display:none}
+.mots-pill{min-width:32px;height:32px;border:none;border-radius:50%;font-size:13px;font-weight:900;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0.4;flex-shrink:0;transition:all 0.2s}
+.mots-pill.current{opacity:1;transform:scale(1.2)}
+.mots-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:4px}
+.mot-card{background:rgba(255,255,255,0.07);border-radius:18px;padding:12px 8px;text-align:center;cursor:pointer;transition:transform 0.15s}
+.mot-card:active{transform:scale(0.95)}
+.mot-emoji{font-size:40px}
+.mot-fr{font-size:14px;font-weight:900;color:#fff;margin-top:6px}
+.mot-en{font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px}
+.mot-letter{font-size:11px;font-weight:900;border-radius:8px;padding:2px 7px;margin-top:4px;display:inline-block}
+
+/* ===== QUIZ ===== */
+#screen-quiz{display:none}
+.quiz-score-bar{display:flex;gap:3px;justify-content:center;margin-bottom:8px;flex-wrap:wrap}
+.q-star{font-size:16px;color:rgba(255,255,255,0.2);transition:all 0.3s}
+.q-star.on{color:#fbbf24;transform:scale(1.2)}
+.quiz-progress{font-size:12px;color:rgba(255,255,255,0.45);text-align:center;margin-bottom:8px}
+.quiz-mode-label{font-size:14px;font-weight:800;color:rgba(255,255,255,0.75);text-align:center;margin-bottom:10px}
+.quiz-big-letter{font-size:80px;font-weight:900;text-align:center;line-height:1;margin-bottom:10px}
+.quiz-emoji-row{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;font-size:48px}
+.quiz-choices-2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:10px}
+.quiz-choices-3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px}
+.qchoice{border:none;border-radius:18px;padding:12px 6px;font-size:22px;font-weight:900;color:#fff;cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,0.25);transition:transform 0.1s}
+.qchoice:active{transform:scale(0.93)}
+.qchoice.correct{background:#22c55e !important;box-shadow:0 0 0 3px #fff !important}
+.qchoice.wrong{background:#ef4444 !important;animation:shake 0.3s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+@keyframes popIn{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+
+
+/* MODAL APPS */
+#apps-modal{position:fixed;top:0;left:0;right:0;bottom:0;z-index:20000;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0.55)}
+#apps-modal.open{display:flex}
+#apps-panel{background:#09304a;border-radius:24px 24px 0 0;width:100%;max-width:420px;padding:16px 16px calc(24px + env(safe-area-inset-bottom));box-shadow:0 -8px 32px rgba(0,0,0,0.4)}
+#apps-panel h3{text-align:center;color:#fff;font-size:15px;font-weight:800;margin-bottom:14px;opacity:0.7}
+.apps-grid-kids{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.app-item-kids{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;text-decoration:none}
+.app-item-kids:active{transform:scale(0.94)}
+.app-icon-kids{width:64px;height:64px;border-radius:16px;background:#1a4a6e;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 4px 10px rgba(0,0,0,0.3);overflow:hidden}
+.app-icon-kids img{width:64px;height:64px;border-radius:16px;object-fit:cover}
+.app-name-kids{font-size:10px;font-weight:700;color:rgba(255,255,255,0.85);text-align:center;line-height:1.2}
+.apps-close{display:block;margin:16px auto 0;border:none;background:rgba(255,255,255,0.12);color:#fff;font-size:13px;font-weight:700;padding:8px 28px;border-radius:20px;cursor:pointer}
+.apps-close:active{transform:scale(0.96)}
+
+/* WIN CANVAS */
+#win-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;pointer-events:none;display:none}
+</style>
+</head>
+<body>
+<div id="app">
+<canvas id="win-canvas"></canvas>
+
+<div id="header">
+  <h1>🔤 <span id="app-title">Lettres Kids</span></h1>
+  <div class="hdr-btns">
+    <button class="lang-btn" onclick="openAppsModal()">📱</button>
+    <button class="lang-btn" id="btn-lang" onclick="toggleLang()">🇬🇧</button>
+    <button class="lang-btn" id="btn-sound" onclick="toggleSound()">🔊</button>
+  </div>
+</div>
+
+<div id="tabs">
+  <button class="tab tab-alpha active" onclick="switchTab('alpha')" id="tab-alpha">🔡 <span id="tlbl-alpha">Alphabet</span></button>
+  <button class="tab tab-trace" onclick="switchTab('trace')" id="tab-trace">✏️ <span id="tlbl-trace">Tracé</span></button>
+  <button class="tab tab-mots" onclick="switchTab('mots')" id="tab-mots">🖼 <span id="tlbl-mots">Mots</span></button>
+  <button class="tab tab-quiz" onclick="switchTab('quiz')" id="tab-quiz">❓ <span id="tlbl-quiz">Quiz</span></button>
+</div>
+
+<div id="main">
+  <div id="screen-alpha"></div>
+  <div id="screen-trace"></div>
+  <div id="screen-mots"></div>
+  <div id="screen-quiz"></div>
+</div>
+
+<!-- MODAL APPS -->
+<div id="apps-modal" onclick="if(event.target===this)closeAppsModal()">
+  <div id="apps-panel">
+    <h3 id="apps-modal-title">Nos autres apps</h3>
+    <div class="apps-grid-kids" id="apps-grid-kids"></div>
+    <button class="apps-close" onclick="closeAppsModal()">✕ Fermer</button>
+  </div>
+</div>
+</div>
+
+<script>
+// ===== DATA =====
+const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+
+const LETTER_COLORS = [
+  '#f472b6','#fb923c','#facc15','#4ade80','#34d399','#22d3ee',
+  '#60a5fa','#a78bfa','#f87171','#fb923c','#a3e635','#2dd4bf',
+  '#38bdf8','#818cf8','#c084fc','#fb7185','#fbbf24','#86efac',
+  '#67e8f9','#93c5fd','#d8b4fe','#fca5a5','#6ee7b7','#7dd3fc',
+  '#c4b5fd','#f9a8d4'
+];
+
+// Noms des lettres FR et EN
+const LETTER_NAMES = {
+  fr: {A:'a',B:'bé',C:'cé',D:'dé',E:'e',F:'ef',G:'gé',H:'ache',I:'i',J:'ji',K:'ka',L:'el',M:'em',N:'en',O:'o',P:'pé',Q:'ku',R:'er',S:'es',T:'té',U:'u',V:'vé',W:'double vé',X:'ix',Y:'i grec',Z:'zed'},
+  en: {A:'ay',B:'bee',C:'see',D:'dee',E:'ee',F:'ef',G:'jee',H:'aitch',I:'eye',J:'jay',K:'kay',L:'el',M:'em',N:'en',O:'oh',P:'pee',Q:'cue',R:'ar',S:'es',T:'tee',U:'you',V:'vee',W:'double-u',X:'ex',Y:'why',Z:'zee'}
+};
+
+// Mots illustrés : 3 mots par lettre [emoji, mot FR, mot EN]
+const WORDS = {
+  A:[['✈️','Avion','Airplane'],['🍎','Pomme','Apple'],['🕷️','Araignée','Spider']],
+  B:[['🍌','Banane','Banana'],['⚽','Ballon','Ball'],['🐝','Abeille','Bee']],
+  C:[['🐱','Chat','Cat'],['🍒','Cerise','Cherry'],['🏠','Maison','Castle']],
+  D:[['🐬','Dauphin','Dolphin'],['🦌','Cerf','Deer'],['🥁','Tambour','Drum']],
+  E:[['⭐','Étoile','Star'],['🐘','Éléphant','Elephant'],['🦅','Aigle','Eagle']],
+  F:[['🌸','Fleur','Flower'],['🦊','Renard','Fox'],['🍓','Fraise','Strawberry']],
+  G:[['🦒','Girafe','Giraffe'],['🎸','Guitare','Guitar'],['🍇','Raisins','Grapes']],
+  H:[['🦔','Hérisson','Hedgehog'],['🌿','Herbe','Herb'],['🏠','Maison','House']],
+  I:[['🏝️','Île','Island'],['🦎','Iguane','Iguana'],['🍦','Glace','Ice cream']],
+  J:[['🌸','Jasmin','Jasmine'],['🦁','Lion','Jaguar'],['🎮','Jeu','Game']],
+  K:[['🦘','Kangourou','Kangaroo'],['🪁','Cerf-volant','Kite'],['🔑','Clé','Key']],
+  L:[['🦁','Lion','Lion'],['🌙','Lune','Moon'],['🦋','Papillon','Butterfly']],
+  M:[['🐒','Singe','Monkey'],['🌊','Mer','Sea'],['🍄','Champignon','Mushroom']],
+  N:[['🌑','Nuit','Night'],['🥜','Noix','Nut'],['🏊','Nageur','Swimmer']],
+  O:[['🐙','Pieuvre','Octopus'],['🐦','Oiseau','Bird'],['🌊','Vague','Ocean']],
+  P:[['🐼','Panda','Panda'],['🦚','Paon','Peacock'],['🍕','Pizza','Pizza']],
+  Q:[['👸','Reine','Queen'],['❓','Question','Question'],['🌿','Quinoa','Quinoa']],
+  R:[['🦏','Rhinocéros','Rhino'],['🌈','Arc-en-ciel','Rainbow'],['🤖','Robot','Robot']],
+  S:[['🐍','Serpent','Snake'],['☀️','Soleil','Sun'],['🌟','Étoile','Star']],
+  T:[['🐢','Tortue','Turtle'],['🐯','Tigre','Tiger'],['🌮','Taco','Taco']],
+  U:[['🦄','Licorne','Unicorn'],['🌂','Parapluie','Umbrella'],['🍇','Raisins','Grapes']],
+  V:[['🌋','Volcan','Volcano'],['🚐','Van','Van'],['🎻','Violon','Violin']],
+  W:[['🐋','Baleine','Whale'],['🐺','Loup','Wolf'],['🪄','Baguette','Wand']],
+  X:[['🎸','Xylophone','Xylophone'],['🦊','Renard','Fox'],['❌','Croix','X mark']],
+  Y:[['🧘','Yoga','Yoga'],['🪀','Yoyo','Yoyo'],['🍋','Citron','Yellow lemon']],
+  Z:[['🦓','Zèbre','Zebra'],['🤿','Masque','Snorkel'],['⚡','Éclair','Zap']]
+};
+
+// Chemins de tracé simplifiés [x,y] sur 300x300 — majuscule
+const LETTER_PATHS = {
+  A:{strokes:[[[150,50],[80,240]],[[150,50],[220,240]],[[100,165],[200,165]]]},
+  B:{strokes:[[[80,50],[80,240]],[[80,50],[170,50],[200,80],[200,120],[170,145],[80,145],[170,145],[200,175],[200,215],[170,240],[80,240]]]},
+  C:{strokes:[[[200,90],[155,55],[100,70],[70,130],[70,170],[100,230],[155,245],[200,210]]]},
+  D:{strokes:[[[80,50],[80,240]],[[80,50],[160,50],[210,100],[210,190],[160,240],[80,240]]]},
+  E:{strokes:[[[200,50],[80,50],[80,240],[200,240]],[[80,145],[175,145]]]},
+  F:{strokes:[[[80,50],[80,240]],[[80,50],[200,50]],[[80,145],[175,145]]]},
+  G:{strokes:[[[200,90],[155,55],[100,70],[70,130],[70,170],[100,230],[155,245],[210,220],[210,165],[155,165]]]},
+  H:{strokes:[[[80,50],[80,240]],[[220,50],[220,240]],[[80,145],[220,145]]]},
+  I:{strokes:[[[100,50],[200,50]],[[150,50],[150,240]],[[100,240],[200,240]]]},
+  J:{strokes:[[[100,50],[200,50]],[[175,50],[175,195],[155,235],[110,240],[80,210]]]},
+  K:{strokes:[[[80,50],[80,240]],[[200,50],[80,145]],[[80,145],[210,240]]]},
+  L:{strokes:[[[80,50],[80,240],[210,240]]]},
+  M:{strokes:[[[80,50],[80,240]],[[80,50],[150,155],[220,50]],[[220,50],[220,240]]]},
+  N:{strokes:[[[80,50],[80,240]],[[80,50],[220,240]],[[220,50],[220,240]]]},
+  O:{strokes:[[[150,50],[100,70],[70,130],[70,170],[100,230],[150,250],[200,230],[230,170],[230,130],[200,70],[150,50]]]},
+  P:{strokes:[[[80,50],[80,240]],[[80,50],[170,50],[210,80],[210,130],[170,155],[80,155]]]},
+  Q:{strokes:[[[150,50],[100,70],[70,130],[70,170],[100,230],[150,250],[200,230],[230,170],[230,130],[200,70],[150,50]],[[180,200],[220,245]]]},
+  R:{strokes:[[[80,50],[80,240]],[[80,50],[170,50],[210,80],[210,130],[170,155],[80,155]],[[150,155],[210,240]]]},
+  S:{strokes:[[[200,80],[155,55],[100,70],[80,110],[100,145],[150,155],[200,175],[210,215],[185,240],[130,250],[80,225]]]},
+  T:{strokes:[[[80,50],[220,50]],[[150,50],[150,240]]]},
+  U:{strokes:[[[80,50],[80,190],[110,235],[150,245],[190,235],[220,190],[220,50]]]},
+  V:{strokes:[[[80,50],[150,240],[220,50]]]},
+  W:{strokes:[[[80,50],[110,240],[150,155],[190,240],[220,50]]]},
+  X:{strokes:[[[80,50],[220,240]],[[220,50],[80,240]]]},
+  Y:{strokes:[[[80,50],[150,155],[220,50]],[[150,155],[150,240]]]},
+  Z:{strokes:[[[80,50],[220,50],[80,240],[220,240]]]}
+};
+
+// ===== LANGUE =====
+let lang = 'fr';
+const TXT = {
+  fr:{
+    app:'Lettres Kids', alpha:'Alphabet', trace:'Tracé', mots:'Mots', quiz:'Quiz',
+    trace_instr:'Trace la lettre avec ton doigt !',
+    trace_title: l => `Trace la lettre ${l}`,
+    maj:'Majuscule', min:'Minuscule',
+    effacer:'Effacer',
+    quiz_how_many:'Combien d\'objets ?',
+    quiz_find_letter:'Quelle est la première lettre de',
+    quiz_find_word:'Trouve un mot qui commence par',
+    quiz_match:'Relie la lettre au bon mot',
+    correct:['Super ! 🌟','Bravo ! ⭐','Parfait ! 🎉','Génial ! 🌈','Excellent ! 🏆'],
+    wrong:'Essaie encore !',
+    done: s => `Score : ${s}/10 🎉`,
+    replay:'↺ Rejouer',
+    new_serie:'Nouvelle lettre ↺',
+  },
+  en:{
+    app:'Letters Kids', alpha:'Alphabet', trace:'Trace', mots:'Words', quiz:'Quiz',
+    trace_instr:'Trace the letter with your finger!',
+    trace_title: l => `Trace the letter ${l}`,
+    maj:'Uppercase', min:'Lowercase',
+    effacer:'Clear',
+    quiz_how_many:'How many objects?',
+    quiz_find_letter:'What is the first letter of',
+    quiz_find_word:'Find a word that starts with',
+    quiz_match:'Match the letter to the word',
+    correct:['Super! 🌟','Bravo! ⭐','Perfect! 🎉','Amazing! 🌈','Excellent! 🏆'],
+    wrong:'Try again!',
+    done: s => `Score: ${s}/10 🎉`,
+    replay:'↺ Play again',
+    new_serie:'New letter ↺',
+  }
+};
+function T(k,...a){ const v=TXT[lang][k]; return typeof v==='function'?v(...a):v; }
+
+function toggleLang(){
+  lang = lang==='fr'?'en':'fr';
+  document.getElementById('btn-lang').textContent = lang==='fr'?'🇬🇧':'🇫🇷';
+  document.getElementById('app-title').textContent = T('app');
+  ['alpha','trace','mots','quiz'].forEach(t=>{
+    document.getElementById('tlbl-'+t).textContent = T(t);
+  });
+  if(currentTab==='alpha') renderAlpha();
+  if(currentTab==='trace') renderTrace();
+  if(currentTab==='mots') renderMots();
+  if(currentTab==='quiz') initQuiz();
+}
+
+// ===== TABS =====
+let currentTab = 'alpha';
+function switchTab(tab){
+  currentTab = tab;
+  ['alpha','trace','mots','quiz'].forEach(s=>{
+    document.getElementById('screen-'+s).style.display = s===tab?'block':'none';
+    document.getElementById('tab-'+s).classList.toggle('active', s===tab);
+  });
+  if(tab==='alpha') renderAlpha();
+  if(tab==='trace') renderTrace();
+  if(tab==='mots') renderMots();
+  if(tab==='quiz') initQuiz();
+}
+
+// ===== ALPHABET =====
+let currentLetterIdx = 0;
+function renderAlpha(){
+  const el = document.getElementById('screen-alpha');
+  const L = LETTERS[currentLetterIdx];
+  const color = LETTER_COLORS[currentLetterIdx];
+  const nameFR = LETTER_NAMES.fr[L];
+  const nameEN = LETTER_NAMES.en[L];
+  const words = WORDS[L]||[];
+
+  el.innerHTML = `
+    <div class="alpha-nav" id="alpha-nav"></div>
+    <div class="letter-display">
+      <div class="big-letter" style="color:${color}" onclick="speakLetter()" id="big-ltr">${L}</div>
+      <div class="letter-both">
+        <div class="ltr-maj" style="color:${color}">${L}</div>
+        <div class="ltr-min" style="color:${color}">${L.toLowerCase()}</div>
+      </div>
+      <div class="letter-name-row">
+        <div class="letter-name">🇫🇷 ${nameFR}</div>
+        <div class="letter-name">🇬🇧 ${nameEN}</div>
+      </div>
+    </div>
+    <div class="alpha-nav-row">
+      <button class="nav-btn" onclick="changeLetter(-1)" style="background:#f472b6;opacity:${currentLetterIdx<=0?0.3:1}">◀</button>
+      <button class="nav-btn" onclick="speakLetter()" style="background:#fbbf24;font-size:20px">🔊</button>
+      <button class="nav-btn" onclick="changeLetter(1)" style="background:#34d399;opacity:${currentLetterIdx>=25?0.3:1}">▶</button>
+    </div>
+    <div class="words-row" id="words-row"></div>
+  `;
+
+  // Pills navigation
+  const nav = document.getElementById('alpha-nav');
+  LETTERS.forEach((l,i)=>{
+    const btn = document.createElement('button');
+    btn.className = 'alpha-pill'+(i===currentLetterIdx?' current':'');
+    btn.textContent = l;
+    btn.style.background = LETTER_COLORS[i];
+    btn.onclick = ()=>{ currentLetterIdx=i; renderAlpha(); setTimeout(speakLetter,50); };
+    nav.appendChild(btn);
+  });
+  setTimeout(()=>{
+    const pills = nav.querySelectorAll('.alpha-pill');
+    if(pills[currentLetterIdx]) pills[currentLetterIdx].scrollIntoView({inline:'center',behavior:'smooth',block:'nearest'});
+  },50);
+
+  // Mots
+  const wr = document.getElementById('words-row');
+  words.forEach(([emoji,fr,en])=>{
+    const d = document.createElement('div');
+    d.className = 'word-card';
+    d.innerHTML = `<div class="word-emoji">${emoji}</div><div class="word-text">${lang==='fr'?fr:en}</div><div class="word-text-en">${lang==='fr'?en:fr}</div>`;
+    d.onclick = ()=>speakWord(lang==='fr'?fr:en);
+    wr.appendChild(d);
+  });
+}
+
+function changeLetter(dir){
+  currentLetterIdx = Math.max(0,Math.min(25, currentLetterIdx+dir));
+  renderAlpha();
+  speakLetter();
+}
+
+// ===== VOIX =====
+let _speaking = false;
+
+function speakWithVoice(text, langCode, rate, pitch){
+  if(!soundEnabled) return;
+  if(_speaking) return;
+  _speaking = true;
+  try {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = langCode;
+    u.rate = rate || 0.85;
+    u.pitch = pitch || 1.15;
+    u.onend = () => { _speaking = false; };
+    u.onerror = () => { _speaking = false; };
+    window.speechSynthesis.speak(u);
+  } catch(e){ _speaking = false; }
+}
+
+
+
+function speakLetterByIdx(idx){
+  const L = LETTERS[idx];
+  const name = lang==='fr'?LETTER_NAMES.fr[L]:LETTER_NAMES.en[L];
+  speakWithVoice(name, lang==='fr'?'fr-FR':'en-GB', 0.82, 1.15);
+}
+function speakLetter(){ speakLetterByIdx(currentLetterIdx); }
+function speakTraceLetter(){ speakLetterByIdx(traceLetterIdx); }
+
+function speakWord(word){
+  speakWithVoice(word, lang==='fr'?'fr-FR':'en-GB', 0.85, 1.1);
+}
+
+// ===== TRACE =====
+let traceLetterIdx = 0;
+let traceCasing = 'maj'; // 'maj' ou 'min'
+let isDrawing = false;
+let traceCtx = null;
+let traceCanvas = null;
+let strokesDone = 0;
+
+function renderTrace(){
+  const sc = document.getElementById('screen-trace');
+  const L = LETTERS[traceLetterIdx];
+  const color = LETTER_COLORS[traceLetterIdx];
+  sc.innerHTML = `
+    <div class="step-indicators" id="step-dots-trace"></div>
+    <div class="trace-header">
+      <div class="trace-big" style="color:${color}">${T('trace_title',L)}</div>
+      <div class="trace-sub">${T('trace_instr')}</div>
+    </div>
+    <div class="trace-tabs">
+      <button class="trace-tab${traceCasing==='maj'?' active':''}" onclick="setTraceCasing('maj')" style="background:${color}">${T('maj')} ${L}</button>
+      <button class="trace-tab${traceCasing==='min'?' active':''}" onclick="setTraceCasing('min')" style="background:${color}">${T('min')} ${L.toLowerCase()}</button>
+    </div>
+    <div class="canvas-wrap"><canvas id="trace-canvas" width="300" height="300"></canvas></div>
+    <div class="trace-actions">
+      <button class="t-btn" onclick="traceMoveLetter(-1)" style="background:#f472b6;opacity:${traceLetterIdx<=0?0.3:1}">◀</button>
+      <button class="t-btn" onclick="clearTraceCanvas()" style="background:rgba(255,255,255,0.15)">${T('effacer')}</button>
+      <button class="t-btn" onclick="traceMoveLetter(1)" style="background:#34d399;opacity:${traceLetterIdx>=25?0.3:1}">▶</button>
+    </div>
+    <div class="trace-feedback" id="trace-feedback"></div>
+  `;
+
+  // Step dots
+  const dots = document.getElementById('step-dots-trace');
+  LETTERS.forEach((_,i)=>{
+    const d = document.createElement('div');
+    d.className='step-dot'+(i<traceLetterIdx?' done':i===traceLetterIdx?' active':'');
+    dots.appendChild(d);
+  });
+
+  traceCanvas = document.getElementById('trace-canvas');
+  traceCtx = traceCanvas.getContext('2d');
+  const maxW = Math.min(window.innerWidth-28, 300);
+  traceCanvas.style.width=maxW+'px';
+  traceCanvas.style.height=maxW+'px';
+
+  attachTraceEvents();
+  drawTraceGuide();
+}
+
+function setTraceCasing(c){ traceCasing=c; renderTrace(); }
+function traceMoveLetter(d){ traceLetterIdx=Math.max(0,Math.min(25,traceLetterIdx+d)); strokesDone=0; renderTrace(); speakTraceLetter(); }
+
+function drawTraceGuide(){
+  if(!traceCtx) return;
+  const ctx = traceCtx;
+  const L = LETTERS[traceLetterIdx];
+  const color = LETTER_COLORS[traceLetterIdx];
+  const dispL = traceCasing==='maj'?L:L.toLowerCase();
+  ctx.clearRect(0,0,300,300);
+
+  // Fond légèrement teinté
+  ctx.fillStyle='rgba(255,255,255,0.04)';
+  ctx.beginPath(); ctx.roundRect(0,0,300,300,20); ctx.fill();
+
+  // Lettre fantôme
+  ctx.save();
+  ctx.globalAlpha=0.07;
+  ctx.fillStyle='#fff';
+  ctx.font=`bold 220px sans-serif`;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(dispL,150,158);
+  ctx.restore();
+
+  // Chemins pointillés de guidage (toujours majuscule pour le guide)
+  const paths = LETTER_PATHS[L];
+  if(!paths) return;
+  ctx.save();
+  ctx.strokeStyle=color+'66';
+  ctx.lineWidth=13;
+  ctx.lineCap='round'; ctx.lineJoin='round';
+  ctx.setLineDash([16,9]);
+  paths.strokes.forEach(pts=>{
+    ctx.beginPath();
+    ctx.moveTo(pts[0][0],pts[0][1]);
+    for(let i=1;i<pts.length;i++){
+      const mx=(pts[i-1][0]+pts[i][0])/2;
+      const my=(pts[i-1][1]+pts[i][1])/2;
+      ctx.quadraticCurveTo(pts[i-1][0],pts[i-1][1],mx,my);
+    }
+    ctx.lineTo(pts[pts.length-1][0],pts[pts.length-1][1]);
+    ctx.stroke();
+  });
+  ctx.restore();
+
+  // Cercles de départ + flèches
+  paths.strokes.forEach(pts=>{
+    ctx.save();
+    ctx.fillStyle=color;
+    ctx.beginPath(); ctx.arc(pts[0][0],pts[0][1],9,0,Math.PI*2); ctx.fill();
+    if(pts.length>=2) drawArrow(ctx,pts[0][0],pts[0][1],pts[1][0],pts[1][1],color);
+    ctx.restore();
+  });
+}
+
+function drawArrow(ctx,x1,y1,x2,y2,color){
+  const ang=Math.atan2(y2-y1,x2-x1);
+  const len=28;
+  const ax=x1+Math.cos(ang)*len, ay=y1+Math.sin(ang)*len;
+  ctx.save();
+  ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=2.5;
+  ctx.setLineDash([]);
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(ax,ay); ctx.stroke();
+  ctx.beginPath(); ctx.translate(ax,ay); ctx.rotate(ang);
+  ctx.moveTo(0,0); ctx.lineTo(-11,-5); ctx.lineTo(-11,5); ctx.closePath(); ctx.fill();
+  ctx.restore();
+}
+
+function attachTraceEvents(){
+  traceCanvas = document.getElementById('trace-canvas');
+  if(!traceCanvas) return;
+  traceCanvas.addEventListener('mousedown', startDraw);
+  traceCanvas.addEventListener('mousemove', moveDraw);
+  traceCanvas.addEventListener('mouseup', endDraw);
+  traceCanvas.addEventListener('touchstart',e=>{e.preventDefault();startDraw(e);},{passive:false});
+  traceCanvas.addEventListener('touchmove',e=>{e.preventDefault();moveDraw(e);},{passive:false});
+  traceCanvas.addEventListener('touchend',endDraw);
+}
+
+function startDraw(e){ if(!traceCtx)return; isDrawing=true; const{x,y}=getXY(e); traceCtx.beginPath(); traceCtx.moveTo(x,y); }
+function moveDraw(e){
+  if(!isDrawing||!traceCtx)return;
+  e.preventDefault();
+  const{x,y}=getXY(e);
+  const color=LETTER_COLORS[traceLetterIdx];
+  traceCtx.lineTo(x,y);
+  traceCtx.strokeStyle=color;
+  traceCtx.lineWidth=15; traceCtx.lineCap='round'; traceCtx.lineJoin='round';
+  traceCtx.setLineDash([]);
+  traceCtx.globalAlpha=0.88; traceCtx.stroke(); traceCtx.globalAlpha=1;
+}
+function endDraw(){
+  if(!isDrawing)return; isDrawing=false;
+  strokesDone++;
+  const L=LETTERS[traceLetterIdx];
+  const needed=(LETTER_PATHS[L]?.strokes?.length)||1;
+  if(strokesDone>=needed) validateTrace();
+}
+function getXY(e){
+  const rect=traceCanvas.getBoundingClientRect();
+  const sx=300/rect.width, sy=300/rect.height;
+  if(e.touches&&e.touches[0]) return{x:(e.touches[0].clientX-rect.left)*sx,y:(e.touches[0].clientY-rect.top)*sy};
+  return{x:(e.clientX-rect.left)*sx,y:(e.clientY-rect.top)*sy};
+}
+function clearTraceCanvas(){ strokesDone=0; drawTraceGuide(); const f=document.getElementById('trace-feedback'); if(f)f.textContent=''; }
+function validateTrace(){
+  const fb=document.getElementById('trace-feedback');
+  if(fb){ const msgs=T('correct'); fb.textContent=msgs[Math.floor(Math.random()*msgs.length)]; }
+  playSuccess(); speakTraceLetter();
+  setTimeout(()=>{
+    if(fb)fb.textContent='';
+    if(traceLetterIdx<25){ traceLetterIdx++; strokesDone=0; renderTrace(); }
+  },1100);
+}
+
+// ===== MOTS =====
+let motsLetterIdx = 0;
+function renderMots(){
+  const sc=document.getElementById('screen-mots');
+  const L=LETTERS[motsLetterIdx];
+  const color=LETTER_COLORS[motsLetterIdx];
+  const words=WORDS[L]||[];
+
+  sc.innerHTML=`
+    <div class="mots-letter-row" id="mots-nav"></div>
+    <div class="mots-grid" id="mots-grid"></div>
+  `;
+
+  // Pills
+  const nav=document.getElementById('mots-nav');
+  LETTERS.forEach((l,i)=>{
+    const btn=document.createElement('button');
+    btn.className='mots-pill'+(i===motsLetterIdx?' current':'');
+    btn.textContent=l;
+    btn.style.background=LETTER_COLORS[i];
+    btn.onclick=()=>{ motsLetterIdx=i; renderMots(); };
+    nav.appendChild(btn);
+  });
+  setTimeout(()=>{
+    const pills=nav.querySelectorAll('.mots-pill');
+    if(pills[motsLetterIdx]) pills[motsLetterIdx].scrollIntoView({inline:'center',behavior:'smooth',block:'nearest'});
+  },50);
+
+  // Grille mots — 3 mots par lettre + 6 autres lettres aléatoires (total ~21 mots)
+  const grid=document.getElementById('mots-grid');
+  // Toutes les lettres adjacentes + quelques éloignées pour remplir
+  const shown = new Set([L]);
+  const nearby = [
+    LETTERS[(motsLetterIdx+1)%26],
+    LETTERS[(motsLetterIdx+2)%26],
+    LETTERS[(motsLetterIdx+3)%26],
+    LETTERS[Math.max(0,motsLetterIdx-1)],
+    LETTERS[Math.max(0,motsLetterIdx-2)],
+    LETTERS[Math.floor(Math.random()*26)],
+    LETTERS[Math.floor(Math.random()*26)],
+  ];
+  nearby.forEach(l=>shown.add(l));
+
+  // Afficher d'abord la lettre courante, puis les autres
+  const order = [L, ...nearby.filter(l=>l!==L)].slice(0,8);
+  order.forEach(l=>{
+    const ws=WORDS[l]||[];
+    ws.forEach(([emoji,fr,en])=>{
+      const wordText=lang==='fr'?fr:en;
+      const wordOther=lang==='fr'?en:fr;
+      const c=LETTER_COLORS[LETTERS.indexOf(l)];
+      const card=document.createElement('div');
+      card.className='mot-card';
+      card.style.background=l===L?`${c}22`:'rgba(255,255,255,0.05)';
+      card.innerHTML=`
+        <div class="mot-emoji">${emoji}</div>
+        <div class="mot-fr" style="color:${c}">${wordText}</div>
+        <div class="mot-en">${wordOther}</div>
+        <div class="mot-letter" style="background:${c}33;color:${c}">${l}</div>
+      `;
+      card.onclick=()=>speakWord(wordText);
+      grid.appendChild(card);
+    });
+  });
+}
+
+// ===== QUIZ =====
+let quizQ=0, quizScore=0, quizAnswered=false;
+const QUIZ_TOTAL=10;
+// Modes : 0=trouve la lettre depuis emoji, 1=trouve le mot depuis lettre, 2=associe lettre-emoji
+const QUIZ_MODES=[0,1,2];
+
+function initQuiz(){
+  quizQ=0; quizScore=0; quizAnswered=false;
+  renderQuizStars(0);
+  document.getElementById('quiz-progress').textContent=`1 / ${QUIZ_TOTAL}`;
+  newQuizQ();
+}
+
+function newQuizQ(){
+  if(quizQ>=QUIZ_TOTAL){
+    const sc=document.getElementById('screen-quiz');
+    sc.querySelector('#quiz-mode-label')?sc.querySelector('#quiz-mode-label').textContent=T('done',quizScore):'';
+    document.getElementById('quiz-mode-label').textContent=T('done',quizScore);
+    document.getElementById('quiz-emoji-row').innerHTML='<div style="font-size:60px;text-align:center;width:100%">🏆</div>';
+    document.getElementById('quiz-choices-wrap').innerHTML=`<button onclick="initQuiz()" style="width:100%;border:none;border-radius:18px;padding:14px;font-size:16px;font-weight:800;color:#fff;background:#60a5fa;cursor:pointer">${T('replay')}</button>`;
+    if(quizScore>=8){playTrumpet();launchWinAnimation();}
+    return;
+  }
+  quizAnswered=false;
+  document.getElementById('quiz-progress').textContent=`${quizQ+1} / ${QUIZ_TOTAL}`;
+
+  const mode=QUIZ_MODES[quizQ%3];
+  const correctIdx=Math.floor(Math.random()*26);
+  const L=LETTERS[correctIdx];
+  const color=LETTER_COLORS[correctIdx];
+  const words=WORDS[L]||[['⭐','Étoile','Star']];
+  const word=words[Math.floor(Math.random()*words.length)];
+
+  if(mode===0){
+    // Vois un emoji + mot, trouve la première lettre
+    const wordLabel=lang==='fr'?word[1]:word[2];
+    document.getElementById('quiz-mode-label').textContent=`${T('quiz_find_letter')} "${wordLabel}" ?`;
+    document.getElementById('quiz-emoji-row').innerHTML=`
+      <span style="font-size:52px;animation:popIn 0.3s">${word[0]}</span>
+      <span style="font-size:26px;font-weight:900;color:#fff;margin-left:10px">${wordLabel}</span>
+    `;
+    // 4 choix de lettres
+    const choices=makeLetterChoices(correctIdx,4);
+    const wrap=document.getElementById('quiz-choices-wrap');
+    wrap.innerHTML='';
+    const grid=document.createElement('div');
+    grid.className='quiz-choices-2';
+    choices.forEach(i=>{
+      const btn=document.createElement('button');
+      btn.className='qchoice';
+      btn.style.background=LETTER_COLORS[i];
+      btn.textContent=LETTERS[i];
+      btn.onclick=()=>answerQuiz(i===correctIdx,btn);
+      grid.appendChild(btn);
+    });
+    wrap.appendChild(grid);
+  } else if(mode===1){
+    // Vois une lettre, trouve le bon mot
+    document.getElementById('quiz-mode-label').textContent=`${T('quiz_find_word')} ${L} ?`;
+    document.getElementById('quiz-emoji-row').innerHTML=`<span style="font-size:80px;font-weight:900;color:${color}">${L}</span>`;
+    // 3 mots (emojis) dont le bon
+    const choices=makeWordChoices(correctIdx,3);
+    const wrap=document.getElementById('quiz-choices-wrap');
+    wrap.innerHTML='';
+    const grid=document.createElement('div');
+    grid.className='quiz-choices-3';
+    choices.forEach(({idx,word:w,correct:isC})=>{
+      const btn=document.createElement('button');
+      btn.className='qchoice';
+      btn.style.background=LETTER_COLORS[idx];
+      btn.innerHTML=`${w[0]}<div style="font-size:12px;margin-top:4px">${lang==='fr'?w[1]:w[2]}</div>`;
+      btn.onclick=()=>answerQuiz(isC,btn);
+      grid.appendChild(btn);
+    });
+    wrap.appendChild(grid);
+  } else {
+    // Vois emoji + lettre, valide si ça correspond
+    const isCorrect=Math.random()<0.5;
+    let shownL=L;
+    if(!isCorrect){
+      let other=correctIdx;
+      while(other===correctIdx) other=Math.floor(Math.random()*26);
+      shownL=LETTERS[other];
+    }
+    document.getElementById('quiz-mode-label').textContent=T('quiz_match')+' ?';
+    document.getElementById('quiz-emoji-row').innerHTML=`
+      <span style="font-size:56px">${word[0]}</span>
+      <span style="font-size:56px;font-weight:900;color:${LETTER_COLORS[LETTERS.indexOf(shownL)]}">${shownL}</span>
+    `;
+    const wrap=document.getElementById('quiz-choices-wrap');
+    wrap.innerHTML='';
+    const grid=document.createElement('div');
+    grid.className='quiz-choices-2';
+    ['✅','❌'].forEach((emoji,i)=>{
+      const btn=document.createElement('button');
+      btn.className='qchoice';
+      btn.style.background=i===0?'#22c55e':'#ef4444';
+      btn.textContent=emoji;
+      btn.style.fontSize='36px';
+      btn.onclick=()=>answerQuiz((i===0)===isCorrect,btn);
+      grid.appendChild(btn);
+    });
+    wrap.appendChild(grid);
+  }
+  // Parler la lettre après 300ms
+  setTimeout(()=>{
+    if(mode===0) speakWithVoice(lang==='fr'?word[1]:word[2], lang==='fr'?'fr-FR':'en-GB', 0.85, 1.1);
+  },300);
+}
+
+function makeLetterChoices(correct,n){
+  const s=new Set([correct]);
+  while(s.size<n){ s.add(Math.floor(Math.random()*26)); }
+  return Array.from(s).sort(()=>Math.random()-0.5);
+}
+function makeWordChoices(correctIdx,n){
+  const correctWord=WORDS[LETTERS[correctIdx]]||[['⭐','Étoile','Star']];
+  const w=correctWord[Math.floor(Math.random()*correctWord.length)];
+  const result=[{idx:correctIdx,word:w,correct:true}];
+  const used=new Set([correctIdx]);
+  while(result.length<n){
+    const i=Math.floor(Math.random()*26);
+    if(used.has(i))continue;
+    used.add(i);
+    const ws=WORDS[LETTERS[i]]||[['⭐','Étoile','Star']];
+    result.push({idx:i,word:ws[Math.floor(Math.random()*ws.length)],correct:false});
+  }
+  return result.sort(()=>Math.random()-0.5);
+}
+
+function answerQuiz(correct,btn){
+  if(quizAnswered)return;
+  quizAnswered=true;
+  if(correct){
+    btn.classList.add('correct');
+    quizScore++; renderQuizStars(quizScore);
+    playSuccess();
+  } else {
+    btn.classList.add('wrong');
+    playWrong();
+  }
+  quizQ++;
+  setTimeout(newQuizQ,1100);
+}
+
+function renderQuizStars(n){
+  const bar=document.getElementById('quiz-score-bar');
+  if(!bar)return;
+  bar.innerHTML='';
+  for(let i=0;i<QUIZ_TOTAL;i++){
+    const s=document.createElement('span');
+    s.className='q-star'+(i<n?' on':'');
+    s.textContent=i<n?'⭐':'☆';
+    bar.appendChild(s);
+  }
+}
+
+// Injecter la structure de quiz au chargement
+function buildQuizScreen(){
+  document.getElementById('screen-quiz').innerHTML=`
+    <div class="quiz-score-bar" id="quiz-score-bar"></div>
+    <div class="quiz-progress" id="quiz-progress">1 / ${QUIZ_TOTAL}</div>
+    <div class="quiz-mode-label" id="quiz-mode-label"></div>
+    <div class="quiz-emoji-row" id="quiz-emoji-row"></div>
+    <div id="quiz-choices-wrap"></div>
+  `;
+}
+
+// ===== SON =====
+let soundEnabled=true;
+function toggleSound(){
+  soundEnabled=!soundEnabled;
+  document.getElementById('btn-sound').textContent=soundEnabled?'🔊':'🔇';
+}
+function playSuccess(){
+  if(!soundEnabled)return;
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    [523,659,784,1047].forEach((f,i)=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.type='sine';o.frequency.value=f;
+      g.gain.setValueAtTime(0,ctx.currentTime+i*0.07);
+      g.gain.linearRampToValueAtTime(0.25,ctx.currentTime+i*0.07+0.02);
+      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+i*0.07+0.18);
+      o.start(ctx.currentTime+i*0.07);o.stop(ctx.currentTime+i*0.07+0.18);
+    });
+  }catch(e){}
+}
+function playWrong(){
+  if(!soundEnabled)return;
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.connect(g);g.connect(ctx.destination);
+    o.type='sawtooth';o.frequency.value=180;
+    g.gain.setValueAtTime(0.2,ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.3);
+    o.start(ctx.currentTime);o.stop(ctx.currentTime+0.3);
+  }catch(e){}
+}
+function playTrumpet(){
+  if(!soundEnabled)return;
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    [523,659,784,1047].forEach((freq,i)=>{
+      const o=ctx.createOscillator(),g=ctx.createGain(),dist=ctx.createWaveShaper();
+      const curve=new Float32Array(256);
+      for(let j=0;j<256;j++){const x=j*2/256-1;curve[j]=x*(13)/(1+10*Math.abs(x));}
+      dist.curve=curve;
+      o.connect(dist);dist.connect(g);g.connect(ctx.destination);
+      o.type='sawtooth';o.frequency.value=freq;
+      const t=ctx.currentTime+i*0.15;
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.3,t+0.02);
+      g.gain.setValueAtTime(0.3,t+0.2);g.gain.linearRampToValueAtTime(0,t+0.25);
+      o.start(t);o.stop(t+0.3);
+    });
+  }catch(e){}
+}
+
+// ===== WIN ANIM =====
+function launchWinAnimation(){
+  const canvas=document.getElementById('win-canvas');
+  canvas.style.display='block';
+  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height;
+  let running=true;
+  canvas._stop=()=>{running=false;canvas.style.display='none';};
+  setTimeout(()=>{if(running){running=false;canvas.style.display='none';}},4000);
+
+  const colors=['#f472b6','#fb923c','#facc15','#4ade80','#34d399','#22d3ee','#60a5fa','#a78bfa'];
+  const particles=[];
+  for(let i=0;i<90;i++){
+    particles.push({
+      x:Math.random()*W,y:-20,
+      vx:(Math.random()-0.5)*7,vy:Math.random()*4+2,
+      r:Math.random()*13+4,
+      color:colors[Math.floor(Math.random()*colors.length)],
+      rot:Math.random()*Math.PI*2,vrot:(Math.random()-0.5)*0.2,
+      letter:LETTERS[Math.floor(Math.random()*26)]
+    });
+  }
+  function draw(){
+    if(!running)return;
+    ctx.clearRect(0,0,W,H);
+    particles.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;p.vy+=0.09;p.rot+=p.vrot;
+      ctx.save();
+      ctx.translate(p.x,p.y);ctx.rotate(p.rot);
+      ctx.fillStyle=p.color;
+      ctx.beginPath();ctx.roundRect(-p.r/2,-p.r/2,p.r,p.r,p.r*0.3);ctx.fill();
+      ctx.fillStyle='#fff';ctx.globalAlpha=0.8;
+      ctx.font=`bold ${p.r+2}px sans-serif`;
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(p.letter,0,0);
+      ctx.restore();
+    });
+    // Lettres géantes flottantes
+    ctx.globalAlpha=0.35;
+    'ABCDE'.split('').forEach((l,i)=>{
+      ctx.fillStyle=colors[i];
+      ctx.font=`bold 58px sans-serif`;
+      ctx.textAlign='center';
+      ctx.fillText(l,(i+1)*W/6,H*0.42+Math.sin(Date.now()/380+i)*28);
+    });
+    ctx.globalAlpha=1;
+    requestAnimationFrame(draw);
+  }
+  draw();
+  canvas.onclick=()=>canvas._stop();
+}
+
+
+const KIDS_APPS = [
+  { id:'6772548541', name:'Lettres Kids', cat:'kids' },
+  { id:'6772546976', name:'Chiffres Kids', cat:'kids' },
+  { id:'6772468506', name:'Mahjong Kids', cat:'kids' },
+];
+
+function openAppsModal(){
+  document.getElementById('apps-modal').classList.add('open');
+  const grid = document.getElementById('apps-grid-kids');
+  if(grid.childElementCount > 0) return;
+  KIDS_APPS.forEach(app => {
+    const a = document.createElement('a');
+    a.className = 'app-item-kids';
+    a.href = `https://apps.apple.com/app/id${app.id}`;
+    a.target = '_blank';
+    const iconDiv = document.createElement('div');
+    iconDiv.className = 'app-icon-kids';
+    const img = document.createElement('img');
+    img.src = `https://tools.applemediaservices.com/api/artwork/app/${app.id}?size=64x64`;
+    img.onerror = () => { iconDiv.textContent = '📱'; };
+    iconDiv.appendChild(img);
+    const name = document.createElement('div');
+    name.className = 'app-name-kids';
+    name.textContent = app.name;
+    a.appendChild(iconDiv);
+    a.appendChild(name);
+    grid.appendChild(a);
+    // JSONP icône iTunes
+    loadAppIcon(app.id, iconDiv, img);
+  });
+}
+function loadAppIcon(appId, iconDiv, img){
+  const cb = 'appcb' + appId;
+  window[cb] = function(data){
+    if(data.results&&data.results[0]){
+      img.src = data.results[0].artworkUrl100;
+      img.onerror = ()=>{ iconDiv.innerHTML='📱'; };
+    }
+    delete window[cb];
+  };
+  const s = document.createElement('script');
+  s.src = `https://itunes.apple.com/lookup?id=${appId}&callback=${cb}`;
+  document.body.appendChild(s);
+}
+function closeAppsModal(){
+  document.getElementById('apps-modal').classList.remove('open');
+}
+
+// ===== INIT =====
+buildQuizScreen();
+switchTab('alpha');
+</script>
+</body>
+</html>
